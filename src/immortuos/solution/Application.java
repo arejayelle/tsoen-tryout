@@ -11,6 +11,8 @@ public class Application {
      * Create a new application. You must not change this constructor's
      * signature.
      */
+    private List<Survivor> survivorList = new ArrayList<>();
+
     public Application() {
         // You may write code here.
         
@@ -25,6 +27,7 @@ public class Application {
      */
     public void registerSurvivor(Survivor survivor) {
         // Write your code here.
+        this.survivorList.add(survivor);
 
     }
 
@@ -37,6 +40,11 @@ public class Application {
      */
     public void onEvent(Event event) {
         // Write your code here.
+        this.event = event;
+
+        for (Survivor survivor: this.survivorList) {
+            survivor.update(this.event);
+        }
 
     }
 }
