@@ -81,15 +81,10 @@ public class Application {
 
     public void zombieEvent(Event event){
         for(Survivor survivor: this.survivorList){
-            int distance = this.getDistance(event.getLocation(), survivor.getLocation());
             switch (survivor.getType()) {
                 case "citizen":
                 case "merchant":
-                    if (distance <= ZOMBIE_CITIZEN_MERCHANT_DISTANCE) {
-                        Point runLocation = this.getRunLocation(survivor.getLocation(), event.getLocation());
-                        survivor.notify(new Event("run", runLocation));
-                    }
-                    //this.notifySurvivor(event, survivor, ZOMBIE_CITIZEN_MERCHANT_DISTANCE);
+                    this.notifySurvivor(event, survivor, ZOMBIE_CITIZEN_MERCHANT_DISTANCE);
                     break;
                 case "soldier":
                     this.notifySurvivor(event, survivor, ZOMBIE_SOLDIER_DISTANCE);
@@ -100,8 +95,16 @@ public class Application {
     private void notifySurvivor(Event event, Survivor survivor, int maxDistance){
         int distance = this.getDistance(event.getLocation(), survivor.getLocation());
         if (distance <= maxDistance) {
+            if(this.shouldRun(event, survivor)){
+                Point runLocation = this.getRunLocation(survivor.getLocation(), event.getLocation());
+                event = new Event("run", runLocation);
+            }
             survivor.notify(event);
         }
+    }
+
+    private boolean shouldRun(Event event, Survivor survivor){
+        return event.getType().equals("zombie") && (survivor.getType().equals("citizen") || survivor.getType().equals("merchant"));
     }
 
     private int getDistance(Point p1, Point p2){
