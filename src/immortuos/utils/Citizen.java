@@ -3,6 +3,7 @@ package immortuos.utils;
 public class Citizen implements Survivor {
 
     private String type = "citizen";
+    private Point location;
 
     @Override
     public void notify(Event event) {
@@ -11,7 +12,7 @@ public class Citizen implements Survivor {
 
     @Override
     public Point getLocation() {
-        return null;
+        return location;
     }
 
     @Override

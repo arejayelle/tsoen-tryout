@@ -12,6 +12,11 @@ import java.util.List;
  */
 public class Application {
     private List<Survivor> survivorList = new ArrayList<Survivor>();
+    private final int WATER_DISTANCE = 5;
+    private final int TRADE_CITIZEN_DISTANCE = 3;
+    private final int TRADE_MERCHANT_DISTANCE = 6;
+    private final int ZOMBIE_CITIZEN_MERCHANT_DISTANCE = 4;
+    private final int ZOMBIE_SOLDIER_DISTANCE = 7;
 
     /**
      * Create a new application. You must not change this constructor's
@@ -30,7 +35,6 @@ public class Application {
      * @param type The type of this survivor.
      */
     public void registerSurvivor(Survivor survivor) {
-        // Write your code here.
         this.survivorList.add(survivor);
         survivor.notify(new Event("registered", survivor.getLocation()));
     }
@@ -49,64 +53,77 @@ public class Application {
                 this.waterEvent(event);
                 break;
             case "trade":
-                for(Survivor survivor: this.survivorList) {
-                    switch (survivor.getType()) {
-                        case "citizen":
-                            if (this.distance(event.getLocation(), survivor.getLocation()) <= 3) {
-                                survivor.notify(event);
-                            }
-                            break;
-                        case "merchant":
-                            if (this.distance(event.getLocation(), survivor.getLocation()) <= 6) {
-                                survivor.notify(event);
-                            }
-                    }
-                }
+                this.tradeEvent(event);
                 break;
             case "zombie":
-                for(Survivor survivor: this.survivorList){
-                    switch (survivor.getType()) {
-                        case "citizen":
-                        case "merchant":
-                            if (this.distance(event.getLocation(), survivor.getLocation()) <= 4) {
-                                Point runLocation = this.findRunLocation(survivor.getLocation(), event.getLocation());
-                                survivor.notify(new Event("run", runLocation));
-                            }
-                            break;
-                        case "soldier":
-                            if (this.distance(event.getLocation(), survivor.getLocation()) <= 7) {
-                                survivor.notify(event);
-                            }
-                    }
-                }
+                this.zombieEvent(event);
                 break;
         }
     }
 
     public void waterEvent(Event event){
         for(Survivor survivor: this.survivorList){
-            int distance = this.distance(event.getLocation(), survivor.getLocation());
-            if(distance <= 5){
-                survivor.notify(event);
+            this.notifySurvivor(event, survivor, WATER_DISTANCE);
+        }
+    }
+
+    public void tradeEvent(Event event){
+        for(Survivor survivor: this.survivorList) {
+            switch (survivor.getType()) {
+                case "citizen":
+                    this.notifySurvivor(event, survivor, TRADE_CITIZEN_DISTANCE);
+                    break;
+                case "merchant":
+                    this.notifySurvivor(event, survivor, TRADE_MERCHANT_DISTANCE);
             }
         }
     }
 
-    public int distance(Point p1, Point p2){
-        return (int)Math.sqrt((p2.getX()-p1.getX())*(p2.getX()-p1.getX()) + (p2.getY()-p1.getY())*(p2.getY()-p1.getY()));
+    public void zombieEvent(Event event){
+        for(Survivor survivor: this.survivorList){
+            switch (survivor.getType()) {
+                case "citizen":
+                case "merchant":
+                    this.notifySurvivor(event, survivor, ZOMBIE_CITIZEN_MERCHANT_DISTANCE);
+                    break;
+                case "soldier":
+                    this.notifySurvivor(event, survivor, ZOMBIE_SOLDIER_DISTANCE);
+            }
+        }
     }
 
-    public Point findRunLocation(Point survivor, Point zombie){
+    private void notifySurvivor(Event event, Survivor survivor, int maxDistance){
+        int distance = this.getDistance(event.getLocation(), survivor.getLocation());
+        if (distance <= maxDistance) {
+            if(this.shouldRun(event, survivor)){
+                Point runLocation = this.getRunLocation(survivor.getLocation(), event.getLocation());
+                event = new Event("run", runLocation);
+            }
+            survivor.notify(event);
+        }
+    }
+
+    private boolean shouldRun(Event event, Survivor survivor){
+        return event.getType().equals("zombie") && (survivor.getType().equals("citizen") || survivor.getType().equals("merchant"));
+    }
+
+    private int getDistance(Point p1, Point p2){
+        return (int)Math.sqrt(this.getSquare((p2.getX()-p1.getX())) + getSquare(p2.getY()-p1.getY()));
+    }
+
+    private double getSquare(double num1){
+        return num1*num1;
+    }
+
+    private Point getRunLocation(Point survivor, Point zombie){
         float angle = this.getAngle(survivor, zombie);
         double x = survivor.getX() + (Math.cos(angle));
         double y = (survivor.getY() + Math.sin(angle));
-        System.out.println("X: " + x + " Y: " + y);
         return new Point(x, y);
     }
 
-    public float getAngle(Point survivor, Point zombie){
+    private float getAngle(Point survivor, Point zombie){
         float angle = (float) Math.toDegrees(Math.atan2(survivor.getY() - zombie.getY(), survivor.getX() - zombie.getX()));
-
         if(angle < 0){
             angle += 360;
         }
