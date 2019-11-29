@@ -103,26 +103,26 @@ public class Application {
         }
     }
 
-    private boolean shouldRun(Event event, Survivor survivor){
+    public boolean shouldRun(Event event, Survivor survivor){
         return event.getType().equals("zombie") && (survivor.getType().equals("citizen") || survivor.getType().equals("merchant"));
     }
 
-    private int getDistance(Point p1, Point p2){
+    public int getDistance(Point p1, Point p2){
         return (int)Math.sqrt(this.getSquare((p2.getX()-p1.getX())) + getSquare(p2.getY()-p1.getY()));
     }
 
-    private double getSquare(double num1){
+    public double getSquare(double num1){
         return num1*num1;
     }
 
-    private Point getRunLocation(Point survivor, Point zombie){
+    public Point getRunLocation(Point survivor, Point zombie){
         float angle = this.getAngle(survivor, zombie);
         double x = survivor.getX() + (Math.cos(angle));
         double y = (survivor.getY() + Math.sin(angle));
         return new Point(x, y);
     }
 
-    private float getAngle(Point survivor, Point zombie){
+    public float getAngle(Point survivor, Point zombie){
         float angle = (float) Math.toDegrees(Math.atan2(survivor.getY() - zombie.getY(), survivor.getX() - zombie.getX()));
         if(angle < 0){
             angle += 360;
